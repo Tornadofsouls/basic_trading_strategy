@@ -21,14 +21,18 @@ def get_pre_trading_date():
     if response.status_code != 200:
         raise Exception("failed to get score csv", calendar_csv_url, " status_code ", response.status_code)
     calendar_list = pandas.read_table(BytesIO(response.content),sep=",").astype({"cal_date": "str", "pretrade_date": "str"})
-    today_entry = calendar_list[calendar_list["cal_date"] == datetime.datetime.today().strftime("%Y%m%d")].iloc[0]
-    pretrade_date_str = today_entry["pretrade_date"]
+    today_entry = calendar_list[calendar_list["cal_date"] == datetime.datetime.today().strftime("%Y%m%d")]
+    if len(today_entry) == 0:
+        return None
+    pretrade_date_str = today_entry.iloc[0]["pretrade_date"]
     pretrade_date_obj = datetime.datetime.strptime(pretrade_date_str, "%Y%m%d")
     return pretrade_date_obj
 
 def get_last_day_pred_table():
-    last_trade_date = get_pre_trading_date().strftime("%Y-%m-%d")
-    score_csv_url = "https://trade-1254083249.cos.ap-nanjing.myqcloud.com/predict/{}.csv".format(last_trade_date)
+    last_trade_date = get_pre_trading_date()
+    if last_trade_date is None:
+        return None
+    score_csv_url = "https://trade-1254083249.cos.ap-nanjing.myqcloud.com/predict/{}.csv".format(last_trade_date.strftime("%Y-%m-%d"))
     response = requests.get(score_csv_url)
     if response.status_code != 200:
         raise Exception("failed to get score csv", score_csv_url, " status_code ", response.status_code)
@@ -71,6 +75,10 @@ def handlebar(ContextInfo):
 
     if not ContextInfo.is_new_bar():
         return
+
+    if ContextInfo.last_day_pred is None:
+        send_notification_log("Skip non trading day", "QLIB_TRADE_COMPLETE")
+        return 
 
     in_trade_time = True
     current_time_str = datetime.datetime.now().strftime("%H%M")
@@ -199,31 +207,3 @@ def handlebar(ContextInfo):
         title = "All trade completed"
         ContextInfo.state.add_trade_message("QLIB_TRADE_COMPLETE")
         send_notification_log(title, "\n".join(ContextInfo.state.trade_message))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
