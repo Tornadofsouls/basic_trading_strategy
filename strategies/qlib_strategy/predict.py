@@ -4,6 +4,7 @@ from qlib.utils import exists_qlib_data, init_instance_by_config
 import pickle
 import os
 from pathlib import Path
+from myalpha158 import MyAlpha158
 import fire
 
 def dump_predict_using_model(model_path = "trained_model", output_directory = "./"):
@@ -20,17 +21,14 @@ def dump_predict_using_model(model_path = "trained_model", output_directory = ".
     "fit_start_time": "2022-07-01",
     "fit_end_time": "2022-07-02",
     "instruments": "csi300",
+    "benchmark": "SH000300"
   }
 
   dataset_config =  {
           "class": "DatasetH",
           "module_path": "qlib.data.dataset",
           "kwargs": {
-              "handler": {
-                  "class": "Alpha158",
-                  "module_path": "qlib.contrib.data.handler",
-                  "kwargs": data_handler_config,
-              },
+              "handler": MyAlpha158(**data_handler_config),
               "segments": {
                   "test": ("2022-07-01", "2025-07-29"),
               },
