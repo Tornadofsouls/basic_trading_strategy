@@ -42,18 +42,18 @@ def objective(trial):
             "module_path": "qlib.contrib.model.gbdt",
             "kwargs": {
                 "loss": "mse",
-                "colsample_bytree": trial.suggest_uniform("colsample_bytree", 0.5, 1),
+                #"colsample_bytree": trial.suggest_uniform("colsample_bytree", 0.5, 1),
                 "learning_rate": trial.suggest_uniform("learning_rate", 0, 1),
-                "subsample": trial.suggest_uniform("subsample", 0, 1),
+                #"subsample": trial.suggest_uniform("subsample", 0, 1),
                 "lambda_l1": trial.suggest_loguniform("lambda_l1", 1e-8, 1e4),
                 "lambda_l2": trial.suggest_loguniform("lambda_l2", 1e-8, 1e4),
                 "max_depth": 10,
-                "num_leaves": trial.suggest_int("num_leaves", 1, 1024),
+                "num_leaves": trial.suggest_int("num_leaves", 2, 1024),
                 "feature_fraction": trial.suggest_uniform("feature_fraction", 0.4, 1.0),
                 "bagging_fraction": trial.suggest_uniform("bagging_fraction", 0.4, 1.0),
                 "bagging_freq": trial.suggest_int("bagging_freq", 1, 7),
                 "min_data_in_leaf": trial.suggest_int("min_data_in_leaf", 1, 50),
-                "min_child_samples": trial.suggest_int("min_child_samples", 5, 100),
+                #"min_child_samples": trial.suggest_int("min_child_samples", 5, 100),
             },
         },
     }
@@ -65,15 +65,10 @@ def objective(trial):
 def optimize_model_hyperparam():
   global dataset
 
-  # use default data
-  # NOTE: need to download data from remote: python scripts/get_data.py qlib_data_cn --target_dir ~/.qlib/qlib_data/cn_data
   provider_uri = "~/.qlib/qlib_data/cn_data"  # target_dir
-  #provider_uri = "/mnt/investment_data/qlib_bin"
   if not exists_qlib_data(provider_uri):
       print(f"Qlib data is not found in {provider_uri}")
-      sys.path.append(str(scripts_dir))
-      from get_data import GetData
-      GetData().qlib_data(target_dir=provider_uri, region=REG_CN)
+      return
   qlib.init(provider_uri=provider_uri, region=REG_CN)
 
   dataset = get_dataset()
