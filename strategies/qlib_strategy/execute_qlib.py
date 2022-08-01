@@ -196,8 +196,8 @@ def handlebar(ContextInfo):
             buy_volume = target_volume - curr_vol
             stock_name = ContextInfo.get_instrumentdetail(stock_code)["InstrumentName"]
             last_price = get_last_price(ContextInfo, stock_code)
-            if buy_volume * last_price < balance_left:
-                print("No enough balance for", stock_code, "balance left", balance_left)
+            if buy_volume * last_price > balance_left:
+                print("No enough balance for", stock_code, "balance left", balance_left, "need", buy_volume * last_price)
                 continue
             balance_left -= buy_volume * last_price
             if in_trade_time:
@@ -213,3 +213,31 @@ def handlebar(ContextInfo):
         title = "All trade completed"
         ContextInfo.state.add_trade_message("QLIB_TRADE_COMPLETE")
         send_notification_log(title, "\n".join(ContextInfo.state.trade_message))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
