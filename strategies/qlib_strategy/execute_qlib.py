@@ -94,6 +94,7 @@ def handlebar(ContextInfo):
     acct_info = acct_info_list[0]
     print("Total balance: ", acct_info.m_dBalance)
     print("Available balance: ", acct_info.m_dAvailable)
+    balance_left = acct_info.m_dAvailable
 
     total_trategy_balance = 21 * 10000
     if total_trategy_balance > acct_info.m_dBalance:
@@ -180,7 +181,7 @@ def handlebar(ContextInfo):
                 passorder(24,1101,ContextInfo.accID,stock_code,11,down_stop_price,sell_volume,"qlib",1,ContextInfo)
             else:
                 #passorder(24,1101,ContextInfo.accID,stock_code,11,down_stop_price,sell_volume,"qlib",1,ContextInfo)
-                smart_algo_passorder(24,1101,ContextInfo.accID,stock_code,5,-1,sell_volume,"qlib", 1,"qlib","PINLINE",0,0,ContextInfo)
+                algo_passorder(24,1101,ContextInfo.accID,stock_code,5,-1,sell_volume,"qlib", 1,ContextInfo)
             trade_msg = ("Sell ", stock_code, stock_name, " shares: ", sell_volume)
             ContextInfo.state.add_trade_message(trade_msg)
     # Buy stock in target list
@@ -194,6 +195,11 @@ def handlebar(ContextInfo):
             trade_complete = False
             buy_volume = target_volume - curr_vol
             stock_name = ContextInfo.get_instrumentdetail(stock_code)["InstrumentName"]
+            last_price = get_last_price(ContextInfo, stock_code)
+            if buy_volume * last_price < balance_left:
+                print("No enough balance for", stock_code, "balance left", balance_left)
+                continue
+            balance_left -= buy_volume * last_price
             if in_trade_time:
                 order_type = 23 if buy_volume > 0 else 24
                 #passorder(order_type,1101,ContextInfo.accID,stock_code,5,-1,buy_volume,"qlib", 1,ContextInfo)
