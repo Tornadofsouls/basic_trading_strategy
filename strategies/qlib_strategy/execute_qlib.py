@@ -182,7 +182,7 @@ def handlebar(ContextInfo):
             else:
                 #passorder(24,1101,ContextInfo.accID,stock_code,11,down_stop_price,sell_volume,"qlib",1,ContextInfo)
                 algo_passorder(24,1101,ContextInfo.accID,stock_code,5,-1,sell_volume,"qlib", 1,ContextInfo)
-            trade_msg = ("Sell ", stock_code, stock_name, " shares: ", sell_volume)
+            trade_msg = "Sell {} {} shares: {}".format(stock_code, stock_name, sell_volume)
             ContextInfo.state.add_trade_message(trade_msg)
     # Buy stock in target list
     for stock_code, target_volume in target_holding_stocks.items():
@@ -205,13 +205,14 @@ def handlebar(ContextInfo):
                 #passorder(order_type,1101,ContextInfo.accID,stock_code,5,-1,buy_volume,"qlib", 1,ContextInfo)
                 #smart_algo_passorder(order_type,1101,ContextInfo.accID,stock_code,5,-1,buy_volume,"qlib", 1,"qlib","FLOAT",0,0,ContextInfo)
                 algo_passorder(order_type,1101,ContextInfo.accID,stock_code,6,-1,buy_volume,"qlib", 1,ContextInfo)
-                trade_msg = ("Buy ", stock_code, stock_name, " shares: ", target_volume - curr_vol)
+                trade_msg = "Buy {} {}  shares: {}".format(stock_code, stock_name, target_volume - curr_vol)
                 ContextInfo.state.add_trade_message(trade_msg)
 
     if trade_complete:
         ContextInfo.state.trade_complete[0] = True
         title = "All trade completed"
         ContextInfo.state.add_trade_message("QLIB_TRADE_COMPLETE")
+        print("\n".join(ContextInfo.state.trade_message))
         send_notification_log(title, "\n".join(ContextInfo.state.trade_message))
 
 
