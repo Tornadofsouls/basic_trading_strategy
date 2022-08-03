@@ -119,14 +119,16 @@ def handlebar(ContextInfo):
     strategy_residual_balance = 0
     for index, stock_info in score_list.iterrows():
         stock_code = stock_info["stockcode"]
-
+        min_shares = 100
+        if stock_code.startswith("688"):
+            min_shares = 200
         # Add to target holding list
         last_price = get_last_price(ContextInfo, stock_code)
         if stock_code in curr_holding:
             target_volume = curr_holding[stock_code]["vol"]
         else:
             target_balance = total_trategy_balance / 10 
-            target_volume = math.floor(target_balance / last_price / 100) * 100
+            target_volume = math.floor(target_balance / last_price / min_shares) * min_shares
         
         strategy_residual_balance += (total_trategy_balance / 10) - (target_volume * last_price)
             
@@ -140,7 +142,7 @@ def handlebar(ContextInfo):
         for index, stock_info in score_list.iloc[:10].iterrows():
             stock_code = stock_info["stockcode"]
             last_price = get_last_price(ContextInfo, stock_code)
-            more_volume = math.floor(strategy_residual_balance / last_price / 100) * 100
+            more_volume = math.floor(strategy_residual_balance / last_price / min_shares) * min_shares
             target_holding_stocks[stock_code] += more_volume
             strategy_residual_balance -= more_volume * last_price
 
@@ -180,8 +182,8 @@ def handlebar(ContextInfo):
                 down_stop_price =  ContextInfo.get_instrumentdetail(stock_code)["DownStopPrice"]
                 passorder(24,1101,ContextInfo.accID,stock_code,11,down_stop_price,sell_volume,"qlib",1,ContextInfo)
             else:
-                #passorder(24,1101,ContextInfo.accID,stock_code,11,down_stop_price,sell_volume,"qlib",1,ContextInfo)
-                algo_passorder(24,1101,ContextInfo.accID,stock_code,5,-1,sell_volume,"qlib", 1,ContextInfo)
+                orderParams = {"OrderType": 1, "PriceType": 4}
+                algo_passorder(24,1101,ContextInfo.accID,stock_code,4,-1,sell_volume,"qlib", 1,"qlibid", orderParams,ContextInfo)
             trade_msg = "Sell {} {} shares: {}".format(stock_code, stock_name, sell_volume)
             ContextInfo.state.add_trade_message(trade_msg)
     # Buy stock in target list
@@ -204,9 +206,10 @@ def handlebar(ContextInfo):
                 order_type = 23 if buy_volume > 0 else 24
                 #passorder(order_type,1101,ContextInfo.accID,stock_code,5,-1,buy_volume,"qlib", 1,ContextInfo)
                 #smart_algo_passorder(order_type,1101,ContextInfo.accID,stock_code,5,-1,buy_volume,"qlib", 1,"qlib","FLOAT",0,0,ContextInfo)
-                algo_passorder(order_type,1101,ContextInfo.accID,stock_code,6,-1,buy_volume,"qlib", 1,ContextInfo)
-                trade_msg = "Buy {} {}  shares: {}".format(stock_code, stock_name, target_volume - curr_vol)
-                ContextInfo.state.add_trade_message(trade_msg)
+                orderParams = {"OrderType": 1, "PriceType": 6}
+                algo_passorder(order_type,1101,ContextInfo.accID,stock_code,6,-1,buy_volume,"qlib", 1,"qlibid", orderParams,ContextInfo)
+            trade_msg = "Buy {} {}  shares: {}".format(stock_code, stock_name, target_volume - curr_vol)
+            ContextInfo.state.add_trade_message(trade_msg)
 
     if trade_complete:
         ContextInfo.state.trade_complete[0] = True
@@ -214,31 +217,3 @@ def handlebar(ContextInfo):
         ContextInfo.state.add_trade_message("QLIB_TRADE_COMPLETE")
         print("\n".join(ContextInfo.state.trade_message))
         send_notification_log(title, "\n".join(ContextInfo.state.trade_message))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
