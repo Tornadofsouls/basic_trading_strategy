@@ -43,7 +43,7 @@ def get_last_day_pred_table():
 def init(ContextInfo):
     ContextInfo.accID = '102666'
     ContextInfo.last_day_pred = get_last_day_pred_table()
-    ContextInfo.sell_white_list = ["603288.SH", "000333.SZ", "000858.SZ", "127045.SZ", "180201.SZ", "300059.SZ", "512880.SH", "601668.SH"] # Do not sell these stocks
+    ContextInfo.sell_white_list = [] # Do not sell these stocks
     ContextInfo.state = StrategyState()
 
 def send_notification_log(title, text):
