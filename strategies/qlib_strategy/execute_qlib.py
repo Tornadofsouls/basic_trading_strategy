@@ -63,9 +63,15 @@ def send_notification_log(title, text):
             print(e)
             try_cnt += 1
 
-def get_last_price(ContextInfo, stock_code):
-    return ContextInfo.get_market_data(["close"], stock_code = [stock_code], skip_paused = True, period = '1m', dividend_type = 'none', count = -1)
 
+last_price_cache = {}
+
+def get_last_price(ContextInfo, stock_code):
+    global last_price_cache 
+    if stock_code not in last_price_cache:
+        last_price = ContextInfo.get_market_data(["close"], stock_code = [stock_code], skip_paused = True, period = '1m', dividend_type = 'none', count = -1)
+        last_price_cache[stock_code] = last_price
+    return last_price_cache[stock_code]
 def handlebar(ContextInfo):
     if ContextInfo.state.trade_complete[0]:
         return
@@ -124,11 +130,9 @@ def handlebar(ContextInfo):
             min_shares = 200
         # Add to target holding list
         last_price = get_last_price(ContextInfo, stock_code)
-        if stock_code in curr_holding:
-            target_volume = curr_holding[stock_code]["vol"]
-        else:
-            target_balance = total_trategy_balance / 10 
-            target_volume = math.floor(target_balance / last_price / min_shares) * min_shares
+        # Do not use existing volume, as volume might not reflect order status
+        target_balance = total_trategy_balance / 10 
+        target_volume = math.floor(target_balance / last_price / min_shares) * min_shares
         
         strategy_residual_balance += (total_trategy_balance / 10) - (target_volume * last_price)
             
@@ -167,9 +171,9 @@ def handlebar(ContextInfo):
             continue
         if stock_code in stock_code_already_order:
             # Wait for order to ENTRUST_STATUS_SUCCEEDED
-            print("Order for ", stock_code, " not completed")
+            print("Order for ", stock_code, " not completed, canceling")
             trade_complete = False
-            continue
+            cancel(str(stock_code_already_order[stock_code].m_nRef),ContextInfo.accID,'STOCK',ContextInfo)
         if curr_holding[stock_code]["vol"] == 0:
             continue
         if stock_code not in target_holding_stocks:
@@ -182,32 +186,35 @@ def handlebar(ContextInfo):
                 down_stop_price =  ContextInfo.get_instrumentdetail(stock_code)["DownStopPrice"]
                 passorder(24,1101,ContextInfo.accID,stock_code,11,down_stop_price,sell_volume,"qlib",1,ContextInfo)
             else:
-                orderParams = {"OrderType": 1, "PriceType": 4}
-                algo_passorder(24,1101,ContextInfo.accID,stock_code,4,-1,sell_volume,"qlib", 1,"qlibid", orderParams,ContextInfo)
+                passorder(24,1101,ContextInfo.accID,stock_code,4,-1,sell_volume,"qlib",1,ContextInfo)
             trade_msg = "Sell {} {} shares: {}".format(stock_code, stock_name, sell_volume)
             ContextInfo.state.add_trade_message(trade_msg)
     # Buy stock in target list
     for stock_code, target_volume in target_holding_stocks.items():
         if stock_code in stock_code_already_order:
-            print("Order for ", stock_code, " not completed")
+            print("Order for ", stock_code, " not completed, canceling")
             trade_complete = False
-            continue
+            cancel(str(stock_code_already_order[stock_code].m_nRef),ContextInfo.accID,'STOCK',ContextInfo)
         curr_vol = curr_holding.get(stock_code, {"vol": 0})["vol"]
         if target_volume != curr_vol:
             trade_complete = False
             buy_volume = target_volume - curr_vol
             stock_name = ContextInfo.get_instrumentdetail(stock_code)["InstrumentName"]
             last_price = get_last_price(ContextInfo, stock_code)
-            if buy_volume * last_price > balance_left:
+            if (buy_volume * last_price) > balance_left:
                 print("No enough balance for", stock_code, "balance left", balance_left, "need", buy_volume * last_price)
                 continue
-            balance_left -= buy_volume * last_price
+            if buy_volume * last_price > 0:
+                balance_left -= buy_volume * last_price
             if in_trade_time:
                 order_type = 23 if buy_volume > 0 else 24
+                price_type =  6 if buy_volume > 0 else 4
+                order_vol = buy_volume if buy_volume > 0 else 0 - buy_volume
                 #passorder(order_type,1101,ContextInfo.accID,stock_code,5,-1,buy_volume,"qlib", 1,ContextInfo)
                 #smart_algo_passorder(order_type,1101,ContextInfo.accID,stock_code,5,-1,buy_volume,"qlib", 1,"qlib","FLOAT",0,0,ContextInfo)
-                orderParams = {"OrderType": 1, "PriceType": 6}
-                algo_passorder(order_type,1101,ContextInfo.accID,stock_code,6,-1,buy_volume,"qlib", 1,"qlibid", orderParams,ContextInfo)
+                #orderParams = {"OrderType": 1, "PriceType": 6}
+                #algo_passorder(order_type,1101,ContextInfo.accID,stock_code,6,-1,buy_volume,"qlib", 1,"qlibid", orderParams,ContextInfo)
+                passorder(order_type,1101,ContextInfo.accID,stock_code,price_type,-1,order_vol,"qlib",1,ContextInfo)
             trade_msg = "Buy {} {}  shares: {}".format(stock_code, stock_name, target_volume - curr_vol)
             ContextInfo.state.add_trade_message(trade_msg)
 
