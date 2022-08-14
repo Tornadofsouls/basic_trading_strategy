@@ -1,4 +1,4 @@
-name: ditrading Docker Image CI
+name: qlib Docker Image CI
 
 on:
   push:
@@ -29,9 +29,9 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v2
         with:
-          context: .
+          context: "{{defaultContext}}:strategies/qlib_strategy"
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ditrading:latest
-          cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/ditrading:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/ditrading:buildcache,mode=max
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/qlib_predict:latest
+          cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/qlib_predict:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/qlib_predict:buildcache,mode=max
