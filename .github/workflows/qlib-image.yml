@@ -1,4 +1,4 @@
-name: ditrading Docker Image CI
+name: qlib Docker Image CI
 
 on:
   push:
