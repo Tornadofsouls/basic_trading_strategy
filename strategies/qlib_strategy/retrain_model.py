@@ -16,7 +16,7 @@ def retrain_model_using_with_iteration(model_path = "trained_model", iteration=N
 
     data_handler_config = {
         "start_time": "2000-01-01",
-        "end_time": "2022-08-01",
+        "end_time": "2025-08-01",
         "fit_start_time": "2000-01-01",
         "fit_end_time": "2014-01-01",
         "instruments": market,
