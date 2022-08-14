@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e
 set -x
-# Download model
-/qlib_trading/coscli cp cos://trade/models/myalpha158_latest.ml /qlib_trading/trained_model
 # Dump latest data or download from web
 dateStr=$(date '+%Y-%m-%d')
 url="https://github.com/chenditc/investment_data/releases/download/${dateStr}/qlib_bin.tar.gz"
@@ -16,10 +14,8 @@ else
 fi
 mkdir -p ~/.qlib/qlib_data/cn_data
 tar -zxvf qlib_bin.tar.gz -C ~/.qlib/qlib_data/cn_data --strip-components=2
-# Run prediction
+# Retrain model
 cd /qlib_trading/
-python predict.py --model_path /qlib_trading/trained_model
-for file in $(ls *.csv) 
-do   
-  /qlib_trading/coscli cp $file cos://trade/predict/$file
-done
+python retrain_model.py
+# Upload model
+/qlib_trading/coscli cp /qlib_trading/trained_model cos://trade/models/myalpha158_latest.ml 
