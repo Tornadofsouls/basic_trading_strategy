@@ -25,14 +25,14 @@ def dump_predict_using_model(model_path = "trained_model", output_directory = ".
   }
 
   dataset_config =  {
-          "class": "DatasetH",
-          "module_path": "qlib.data.dataset",
-          "kwargs": {
-              "handler": MyAlpha158(**data_handler_config),
-              "segments": {
-                  "test": ("2022-07-01", "2025-07-29"),
-              },
-          },
+    "class": "DatasetH",
+    "module_path": "qlib.data.dataset",
+    "kwargs": {
+        "handler": MyAlpha158(**data_handler_config),
+        "segments": {
+            "test": ("2022-07-01", "2025-07-29"),
+        },
+    },
   }
   dataset = init_instance_by_config(dataset_config)
 
