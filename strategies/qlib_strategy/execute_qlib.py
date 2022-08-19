@@ -142,13 +142,27 @@ def handlebar(ContextInfo):
 
     print("Assigning residual balance:", strategy_residual_balance)
     # Attribute residual balance
-    if strategy_residual_balance > 0:
-        for index, stock_info in score_list.iloc[:10].iterrows():
-            stock_code = stock_info["stockcode"]
+    while strategy_residual_balance > 0:
+        # Calculate diff with average target
+        # Attribute to largest diff
+        target_single_stock_amount = total_trategy_balance / 10 
+        amount_diff_map = {}
+        for stock_code, stock_volume in target_holding_stocks.items():
             last_price = get_last_price(ContextInfo, stock_code)
-            more_volume = math.floor(strategy_residual_balance / last_price / min_shares) * min_shares
-            target_holding_stocks[stock_code] += more_volume
-            strategy_residual_balance -= more_volume * last_price
+            amount_diff_map[stock_code] = target_single_stock_amount - (last_price * stock_volume)
+
+        largest_diff_stock = max(amount_diff_map, key=amount_diff_map.get)
+        min_shares = 100
+        if largest_diff_stock.startswith("688"):
+            min_shares = 200
+
+        min_amount = get_last_price(ContextInfo, largest_diff_stock) * min_shares
+        # Insufficient average target
+        if min_amount > strategy_residual_balance:
+            break
+
+        strategy_residual_balance -= min_amount
+        target_holding_stocks[largest_diff_stock] += min_shares
 
     print("Residual balance:", strategy_residual_balance)
     trade_complete = True
