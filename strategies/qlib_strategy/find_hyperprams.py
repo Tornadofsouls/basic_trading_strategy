@@ -17,7 +17,8 @@ def get_dataset():
       "fit_start_time": "2001-01-01",
       "fit_end_time": "2014-01-01",
       "instruments": "csi300",
-      "benchmark": "SH000300"
+      "benchmark": "SH000300",
+      "days_ahead": 2
   }    
   dataset_config = {
       "class": "DatasetH",
@@ -53,6 +54,7 @@ def objective(trial):
                 "bagging_fraction": trial.suggest_uniform("bagging_fraction", 0.4, 1.0),
                 "bagging_freq": trial.suggest_int("bagging_freq", 1, 7),
                 "min_data_in_leaf": trial.suggest_int("min_data_in_leaf", 1, 50),
+                "num_boost_round" : 1000
                 #"min_child_samples": trial.suggest_int("min_child_samples", 5, 100),
             },
         },
