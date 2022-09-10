@@ -1,4 +1,7 @@
 ## Improvements
+
+Following trials is based on default example workflow on qlib, trying to experiment the effectiveness of some factor.
+
 ### 1. Use open price as deal price.
 Without additional tuning, can improve default qlib strategy. As open price is closer to the latest available pricing point.
 
@@ -28,5 +31,25 @@ Use open price change as training label, use open price as exchange deal price. 
 | annualized_return | 0.131321 | 0.080368                      | 0.043739                   | 0.381549               | 0.114158            |
 | information_ratio | 1.496443 | 1.012313                      | 0.551214                   | 4.478850               | 1.336372            |
 
+With the lgbm params tuned using optuna, using different timeframe and l2 valid error as target:
+
+params = {'bagging_fraction': 0.6915989094330355, 'bagging_freq': 2, 'feature_fraction': 0.8133115108574889, 
+              'lambda_l1': 0.008391240881677772, 'lambda_l2': 70.02732307226233, 'learning_rate': 0.014424878298136292, 
+              'min_data_in_leaf': 196, 'num_leaves': 837, "max_depth": 10, "num_boost_round": 147, "verbosity": -1}
+
+| Metric                        | Default  | topk=50 n_drop=5 without cost | topk=50 n_drop=5 with cost | n_drop=50 without cost | n_drop=50 with cost |
+|-------------------------------|----------|-------------------------------|----------------------------|------------------------|---------------------|
+| fixed 147 epoch annualized_return | 0.131321 | 0.056349                      | 0.015109                   | 0.341092               | 0.089175            |
+| fixed 147 epoch information_ratio | 1.496443 | 0.578441                      | 0.155173                   | 3.679739               | 0.961535            |
+| early stop 687 annualized_return  | 0.131321 | 0.078864                      | 0.037974                   | 0.367172               | 0.107527            |
+| early stop 687 information_ratio  | 1.496443 | 0.924411                      | 0.445331                   | 4.247130               | 1.241823            |
+
+This shows:
+1. The params from the default workflow has good generalization ability, using early stopping, it can be used for different feature set to provide a baseline performance.
+2. When to stop training influence the result a lot, with different number of training data, the epoch will be different. We cannot simply using the same number of epoch as the hyperparams for final model.
+3. When training with early stopping validation set, the performance doesn't diff a lot for different lgbm hyper params.
+
+
+---
 
 Markdown table generator: https://www.tablesgenerator.com/markdown_tables
