@@ -50,6 +50,16 @@ This shows:
 3. When training with early stopping validation set, the performance doesn't diff a lot for different lgbm hyper params.
 4. Without all new factors above, we get a model performs much better without transactional cost, but perform worse with transactional cost. This indicates we can do some more works on trading strategy to fully utilize the prediction result. This also explained why the group performance chart seems amazing but back test result is bad.
 
+### 4. Use the 4th day's open price minus 2nd day's open price as label
+
+Use `"Ref($open, -4)/Ref($open, -1) - 1"` is from the idea that when people made a trade decision, he might not trade at same day, he might trade one or two days later, so the price change for 1 or 2 day might contains a lot of noise. But the trend in the mid term might be more stable. For example, a price trend like 10, 10.5, 10.2, 11, 12. If we use 1 day price gap, we might get 3 noise sample and 2 useful sample. But if we use day 3 days gap, we might get 5 useful sample, which improves the overall quality of the dataset.
+
+| Metric            | Default  | topk=50 n_drop=5 without cost | topk=50 n_drop=5 with cost | n_drop=50 without cost | n_drop=50 with cost |
+|-------------------|----------|-------------------------------|----------------------------|------------------------|---------------------|
+| annualized_return | 0.131321 | 0.215619                      | 0.173849                   | 0.400793               | 0.197793            |
+| information_ratio | 1.496443 | 2.487316                      | 2.006533                   | 4.514065               | 2.222820            |
+
+This can improve return with and without cost. But the number of days ahead is also a hyperparameter that needs to be decide carefully. There might be other ways to denoise.
 
 ---
 
