@@ -20,7 +20,7 @@ Without additional tuning, changing TopK Dropout trading strategy from topK=50, 
 | annualized_return | 0.131321 | 0.215849     | -0.011118 |
 | information_ratio | 1.496443 | 2.543944     | -0.131063 |
 
-This indicates the prediction is not good enough / provides enough alpha to cover transaction cost.
+This indicates the prediction is not good enough / provides enough alpha to cover transaction cost. For example, stock A and stock B might diff in score 0.001 and changed rank between days a lot, which generates a lot of transaction fee but little gain.
 
 
 ### Combining 1.2.3.
@@ -48,6 +48,7 @@ This shows:
 1. The params from the default workflow has good generalization ability, using early stopping, it can be used for different feature set to provide a baseline performance.
 2. When to stop training influence the result a lot, with different number of training data, the epoch will be different. We cannot simply using the same number of epoch as the hyperparams for final model.
 3. When training with early stopping validation set, the performance doesn't diff a lot for different lgbm hyper params.
+4. Without all new factors above, we get a model performs much better without transactional cost, but perform worse with transactional cost. This indicates we can do some more works on trading strategy to fully utilize the prediction result. This also explained why the group performance chart seems amazing but back test result is bad.
 
 
 ---
