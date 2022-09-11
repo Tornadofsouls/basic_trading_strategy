@@ -52,12 +52,36 @@ This shows:
 
 ### 4. Use the 4th day's open price minus 2nd day's open price as label
 
-Use `"Ref($open, -4)/Ref($open, -1) - 1"` is from the idea that when people made a trade decision, he might not trade at same day, he might trade one or two days later, so the price change for 1 or 2 day might contains a lot of noise. But the trend in the mid term might be more stable. For example, a price trend like 10, 10.5, 10.2, 11, 12. If we use 1 day price gap, we might get 3 noise sample and 2 useful sample. But if we use day 3 days gap, we might get 5 useful sample, which improves the overall quality of the dataset.
+Based on Alpha158, use `"Ref($open, -4)/Ref($open, -1) - 1"`. This is from the idea that when people made a trade decision, he might not trade at same day, he might trade one or two days later, so the price change for 1 or 2 day might contains a lot of noise. But the trend in the mid term might be more stable. For example, a price trend like 10, 10.5, 10.2, 11, 12. If we use 1 day price gap, we might get 3 noise sample and 2 useful sample. But if we use day 3 days gap, we might get 5 useful sample, which improves the overall quality of the dataset.
 
-| Metric            | Default  | topk=50 n_drop=5 without cost | topk=50 n_drop=5 with cost | n_drop=50 without cost | n_drop=50 with cost |
-|-------------------|----------|-------------------------------|----------------------------|------------------------|---------------------|
-| annualized_return | 0.131321 | 0.215619                      | 0.173849                   | 0.400793               | 0.197793            |
-| information_ratio | 1.496443 | 2.487316                      | 2.006533                   | 4.514065               | 2.222820            |
+`"Ref($open, -2)/Ref($open, -1) - 1"`:
+
+| Metric            | topk=50 n_drop=5 without cost | topk=50 n_drop=5 with cost | n_drop=50 without cost | n_drop=50 with cost |
+|-------------------|-------------------------------|----------------------------|------------------------|---------------------|
+| annualized_return | 0.107987                      | 0.063969                   | 0.361458               | 0.097535            |
+| information_ratio | 1.342295                      | 0.795436                   | 4.411219               | 1.189048            |
+
+`"Ref($open, -3)/Ref($open, -1) - 1"`:
+
+| Metric            | topk=50 n_drop=5 without cost | topk=50 n_drop=5 with cost | n_drop=50 without cost | n_drop=50 with cost |
+|-------------------|-------------------------------|----------------------------|------------------------|---------------------|
+| annualized_return | 0.206049                      | 0.163131                   | 0.398332               | 0.168433            |
+| information_ratio | 2.493153                      | 1.974756                   | 4.773428               | 2.017505            |
+
+`"Ref($open, -4)/Ref($open, -1) - 1"`:
+
+| Metric            | topk=50 n_drop=5 without cost | topk=50 n_drop=5 with cost | n_drop=50 without cost | n_drop=50 with cost |
+|-------------------|-------------------------------|----------------------------|------------------------|---------------------|
+| annualized_return | 0.228667                      | 0.185567                   | 0.402918               | 0.198572            |
+| information_ratio | 2.859687                      | 2.321942                   | 4.894671               | 2.412606            |
+
+`"Ref($open, -5)/Ref($open, -1) - 1"`:
+
+| Metric            | topk=50 n_drop=5 without cost | topk=50 n_drop=5 with cost | n_drop=50 without cost | n_drop=50 with cost |
+|-------------------|-------------------------------|----------------------------|------------------------|---------------------|
+| annualized_return | 0.203602                      | 0.161180                   | 0.355353               | 0.166301            |
+| information_ratio | 2.639397                      | 2.089376                   | 4.369002               | 2.043668            |
+
 
 This can improve return with and without cost. But the number of days ahead is also a hyperparameter that needs to be decide carefully. There might be other ways to denoise.
 
