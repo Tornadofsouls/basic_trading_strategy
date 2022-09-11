@@ -72,6 +72,20 @@ Based on result of #4. Remove the benchmark feature and only keep the benchmark 
 
 We see that when n_drop=topk=50, we get information ratio improved to 5.15. All other metrics improved too. Seems the benchmark feature itself contains some information that doesn't generalize very well.
 
+### 6. Extend training data
+
+Based on #5. Extend the training time range from 2008-01-01 to 2006-01-01, we have 2 more years of training data, which is about 2 * 200 * 300 = 120000 training samples, 25% more training data. We see small improvements on information ratio:
+
+| Metric            | Default  | topk=50 n_drop=5 without cost | topk=50 n_drop=5 with cost | n_drop=50 without cost | n_drop=50 with cost |
+|-------------------|----------|-------------------------------|----------------------------|------------------------|---------------------|
+| annualized_return | 0.131321 | 0.224468                      | 0.180759                   | 0.441722               | 0.235599            |
+| information_ratio | 1.496443 | 2.759474                      | 2.223117                   | 5.359988               | 2.860284            |
+
+### 7. Use earlier time as validation set
+
+The assumption is that some alpha factor might no longer work for now, so using latest data for training can help the model learn more information for recent working factor. Use earlier time as validation set can prevent overfitting, if the model already learned enough patterns, the earlier time l2 error will stop decreasing.
+
+
 
 ---
 
