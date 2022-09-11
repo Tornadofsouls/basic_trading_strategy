@@ -61,6 +61,18 @@ Use `"Ref($open, -4)/Ref($open, -1) - 1"` is from the idea that when people made
 
 This can improve return with and without cost. But the number of days ahead is also a hyperparameter that needs to be decide carefully. There might be other ways to denoise.
 
+### 5. Use only the benchmark diff
+
+Based on result of #4. Remove the benchmark feature and only keep the benchmark diff feature, we see some improvements:
+
+| Metric            | Default  | topk=50 n_drop=5 without cost | topk=50 n_drop=5 with cost | n_drop=50 without cost | n_drop=50 with cost |
+|-------------------|----------|-------------------------------|----------------------------|------------------------|---------------------|
+| annualized_return | 0.131321 | 0.226654                      | 0.183528                   | 0.425658               | 0.218427            |
+| information_ratio | 1.496443 | 2.668578                      | 2.160991                   | 5.155509               | 2.641912            |
+
+We see that when n_drop=topk=50, we get information ratio improved to 5.15. All other metrics improved too. Seems the benchmark feature itself contains some information that doesn't generalize very well.
+
+
 ---
 
 Markdown table generator: https://www.tablesgenerator.com/markdown_tables
