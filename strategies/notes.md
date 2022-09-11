@@ -85,6 +85,13 @@ Based on #5. Extend the training time range from 2008-01-01 to 2006-01-01, we ha
 
 The assumption is that some alpha factor might no longer work for now, so using latest data for training can help the model learn more information for recent working factor. Use earlier time as validation set can prevent overfitting, if the model already learned enough patterns, the earlier time l2 error will stop decreasing.
 
+The trial using 2006-01-01 to 2007-12-31 as validation set and using 2008-01-01 to 2016-12-31 as training set, doesn't show a big difference:
+
+| Metric            | Default  | topk=50 n_drop=5 without cost | topk=50 n_drop=5 with cost | n_drop=50 without cost | n_drop=50 with cost |
+|-------------------|----------|-------------------------------|----------------------------|------------------------|---------------------|
+| annualized_return | 0.131321 | 0.238539                      | 0.196479                   | 0.455672               | 0.250049            |
+| information_ratio | 1.496443 | 2.750651                      | 2.266138                   | 5.201723               | 2.849680            |
+
 
 
 ---
