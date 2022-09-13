@@ -36,13 +36,11 @@ class MyAlpha158(Alpha158):
             "rolling": {},
         }
         normal_fields, normal_names = self.parse_config_to_fields(conf)
-        benchmark_fields = ["ChangeInstrument('{}', {})".format(self.benchmark, field) for field in normal_fields ]
-        benchmark_names = ["benchmark_{}_{}".format(self.benchmark, name) for name in normal_names ]
 
         benchmark_diff_fields = ["ChangeInstrument('{}', {}) - ({})".format(self.benchmark, field, field) for field in normal_fields ]
         benchmark_diff_names = ["benchmark_diff_{}_{}".format(self.benchmark, name) for name in normal_names ]
         
-        return normal_fields + benchmark_fields + benchmark_diff_fields , normal_names + benchmark_names + benchmark_diff_names 
+        return normal_fields + benchmark_diff_fields , normal_names + benchmark_diff_names 
 
     def get_label_config(self):
         return (["Ref($open, -{})/Ref($open, -1) - 1".format(self.days_ahead)], ["LABEL0"])

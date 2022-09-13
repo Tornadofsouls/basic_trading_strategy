@@ -16,14 +16,14 @@ dataset_cache = {}
 
 def get_dataset(days_ahead=2):
   data_handler_config = {
-      "start_time": "2001-01-01",
-      "end_time": "2014-01-05",
+      "start_time": "2006-01-01",
+      "end_time": "2022-09-01",
+      "fit_start_time": "2008-01-01",
+      "fit_end_time": "2016-12-31"
       "instruments": "csi300",
       "benchmark": "SH000300",
       "days_ahead": days_ahead
   }
-  data_handler_config["fit_start_time"] = data_handler_config["start_time"]
-  data_handler_config["fit_end_time"] = "2014-01-01"
   dataset_config = {
       "class": "DatasetH",
       "module_path": "qlib.data.dataset",
@@ -31,7 +31,7 @@ def get_dataset(days_ahead=2):
           "handler": MyAlpha158(**data_handler_config),
           "segments": {
               "train": (data_handler_config["fit_start_time"], data_handler_config["fit_end_time"]),
-              "valid": (data_handler_config["fit_end_time"], data_handler_config["end_time"]),
+              "valid": ("2005-08-01", "2007-12-31"),
           },
       },
   }
@@ -40,8 +40,8 @@ def get_dataset(days_ahead=2):
 
 def get_model_ir(model, model_params):
     test_data_handler_config = {
-        "start_time": "2014-01-01",
-        "end_time": "2020-01-01",
+        "start_time": "2017-01-01",
+        "end_time": "2020-08-01",
         "instruments": "csi300",
         "benchmark": "SH000300",
         "days_ahead": 2
@@ -81,24 +81,23 @@ def get_model_ir(model, model_params):
             "kwargs": {
                 "model": model,
                 "dataset": test_dataset,
-                "topk": 20,
-                "n_drop": 20
+                "topk": 50,
+                "n_drop": 50
             },
         },
         "backtest": {
             "start_time": test_data_handler_config["start_time"],
             "end_time": test_data_handler_config["end_time"],
-            "account": 5000000,
+            "account": 100000000,
             "benchmark": "SH000300",
             "exchange_kwargs": {
                 "freq": "day",
-                "limit_threshold": 0.195,
+                "limit_threshold": 0.095,
                 "deal_price": "open",
-                "open_cost": 0.0002,
-                "close_cost": 0.0012,
+                "open_cost": 0.0005,
+                "close_cost": 0.0015,
                 "min_cost": 5,
             },
-        },
     }
 
     # backtest and analysis
@@ -117,12 +116,15 @@ def get_model_ir(model, model_params):
 
     analysis_df = recorder.load_object("portfolio_analysis/port_analysis_1day.pkl")
 
-    return analysis_df.loc[('excess_return_with_cost', 'information_ratio')]["risk"]
+    ir = analysis_df.loc[('excess_return_without_cost', 'information_ratio')]["risk"]
+    annual_return = analysis_df.loc[('excess_return_without_cost', 'annualized_return')]["risk"]
+    print(f"Current trial ir: {ir}, return {annual_return}")
+    return ir
 
 def objective(trial):
     global dataset_cache
 
-    days_ahead = 2
+    days_ahead = trial.suggest_int("days_ahead", 2, 6),
 
     cache_key = f"train_{days_ahead}"
     if cache_key not in dataset_cache:
@@ -133,8 +135,8 @@ def objective(trial):
     alpha1 = 1
     alpha2 = 1
     if enable_sr:
-        alpha1 = trial.suggest_uniform("alpha1", 0, 1)
-        alpha2 = trial.suggest_uniform("alpha2", 0, 1)
+        alpha1 = trial.suggest_int("alpha1", 0, 10) / 10
+        alpha2 = trial.suggest_int("alpha2", 0, 10) / 10
 
     task = {
         "model": {
@@ -148,16 +150,15 @@ def objective(trial):
                 "alpha2": alpha2,
                 "decay": 0.5,
                 
-                'bagging_fraction': 0.7108329708514702, 
-                'bagging_freq': 2, 
-                'feature_fraction': 0.4977241113173993, 
-                'lambda_l1': 1.0274619243959457, 
-                'lambda_l2': 80.74475219018196, 
-                'learning_rate': 0.015541749212165102, 
-                'min_data_in_leaf': 34, 
-                'num_leaves': 235,
-                'epochs': 356,
-                "max_depth": 10
+                "loss": "mse",
+                "colsample_bytree": 0.8879,
+                "learning_rate": 0.0421,
+                "subsample": 0.8789,
+                "lambda_l1": 205.6999,
+                "lambda_l2": 580.9768,
+                "max_depth": 8,
+                "num_leaves": 210,
+                "num_threads": 20,
             },
         },
         "days_ahead": days_ahead
