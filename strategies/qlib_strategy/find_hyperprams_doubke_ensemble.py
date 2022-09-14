@@ -19,7 +19,7 @@ def get_dataset(days_ahead=2):
       "start_time": "2006-01-01",
       "end_time": "2022-09-01",
       "fit_start_time": "2008-01-01",
-      "fit_end_time": "2016-12-31"
+      "fit_end_time": "2016-12-31",
       "instruments": "csi300",
       "benchmark": "SH000300",
       "days_ahead": days_ahead
@@ -98,6 +98,7 @@ def get_model_ir(model, model_params):
                 "close_cost": 0.0015,
                 "min_cost": 5,
             },
+        }
     }
 
     # backtest and analysis
@@ -124,7 +125,7 @@ def get_model_ir(model, model_params):
 def objective(trial):
     global dataset_cache
 
-    days_ahead = trial.suggest_int("days_ahead", 2, 6),
+    days_ahead = trial.suggest_int("days_ahead", 2, 6)
 
     cache_key = f"train_{days_ahead}"
     if cache_key not in dataset_cache:
