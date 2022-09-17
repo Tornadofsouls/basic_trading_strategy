@@ -2,7 +2,7 @@
 set -e
 set -x
 # Download model
-/qlib_trading/coscli cp cos://trade/models/myalpha158_latest.ml /qlib_trading/trained_model
+/qlib_trading/coscli cp cos://trade/models/myalpha158_mymodel_20220917.ml /qlib_trading/trained_model
 # Dump latest data or download from web
 dateStr=$(date '+%Y-%m-%d')
 url="https://github.com/chenditc/investment_data/releases/download/${dateStr}/qlib_bin.tar.gz"

@@ -1,6 +1,6 @@
 FROM chenditc/investment_data
 RUN pip install optuna
-RUN wget https://github.com/chenditc/investment_data/releases/download/2022-08-29/qlib_bin.tar.gz && mkdir -p ~/.qlib/qlib_data/cn_data && tar -zxvf qlib_bin.tar.gz -C ~/.qlib/qlib_data/cn_data --strip-components=2
+RUN wget https://github.com/chenditc/investment_data/releases/download/2022-09-13/qlib_bin.tar.gz && mkdir -p ~/.qlib/qlib_data/cn_data && tar -zxvf qlib_bin.tar.gz -C ~/.qlib/qlib_data/cn_data --strip-components=2
 RUN apt-get update && apt-get install -y libmariadb-dev && pip install mysqlclient
 COPY . /workdir
 WORKDIR /workdir

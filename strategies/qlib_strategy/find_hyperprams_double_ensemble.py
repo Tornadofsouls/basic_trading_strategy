@@ -9,6 +9,7 @@ from qlib.utils import flatten_dict
 import optuna
 from optuna.samplers import RandomSampler
 from myalpha158 import MyAlpha158
+from my_model import MyEnsembleModel
 import fire
 import time
 
@@ -125,52 +126,50 @@ def get_model_ir(model, model_params):
 def objective(trial):
     global dataset_cache
 
-    days_ahead = trial.suggest_int("days_ahead", 2, 6)
+    days_ahead = trial.suggest_int("days_ahead", 3, 3)
 
     cache_key = f"train_{days_ahead}"
     if cache_key not in dataset_cache:
         dataset_cache[cache_key] = get_dataset(days_ahead)
     dataset = dataset_cache[cache_key]
 
-    enable_sr = trial.suggest_categorical("enable_sr", [True, False])
+    enable_sr = False
+    enable_fs = True
     alpha1 = 1
-    alpha2 = 1
     if enable_sr:
-        alpha1 = trial.suggest_int("alpha1", 0, 10) / 10
-        alpha2 = trial.suggest_int("alpha2", 0, 10) / 10
-
-    task = {
-        "model": {
-            "class": "DEnsembleModel",
-            "module_path": "qlib.contrib.model.double_ensemble",
-            "kwargs": {
-                "num_models": trial.suggest_int("num_models", 3, 8),
-                "enable_sr": enable_sr,
-                "enable_fs": trial.suggest_categorical("enable_fs", [True, False]),
-                "alpha1": alpha1,
-                "alpha2": alpha2,
-                "decay": 0.5,
-                
-                "loss": "mse",
-                "colsample_bytree": 0.8879,
-                "learning_rate": 0.0421,
-                "subsample": 0.8789,
-                "lambda_l1": 205.6999,
-                "lambda_l2": 580.9768,
-                "max_depth": 8,
-                "num_leaves": 210,
-                "num_threads": 20,
-            },
-        },
-        "days_ahead": days_ahead
+        alpha1 = trial.suggest_int("alpha1", 1, 20) / 10
+    num_models = trial.suggest_int("num_models", 3, 3)
+    all_params = {
+        "days_ahead": days_ahead,
+        "enable_sr": enable_sr,
+        "enable_fs": enable_fs,
+        "alpha1": alpha1/10,
+        "num_models": num_models
     }
-    print("Trying params:", task)
-    model = init_instance_by_config(task["model"])
+    print("Trying params:", all_params)
+
+    model = MyEnsembleModel(
+        num_models= num_models,
+        enable_sr= enable_sr,
+        enable_fs= enable_fs,
+        alpha1= alpha1,
+        decay= 0.5,
+                
+        loss="mse",
+        colsample_bytree=0.8879,
+        learning_rate=0.0421,
+        subsample=0.8789,
+        lambda_l1=205.6999,
+        lambda_l2=580.9768,
+        max_depth=8,
+        num_leaves=210,
+        num_threads=20,
+    )
     model.fit(dataset)
-    return get_model_ir(model, task)
+    return get_model_ir(model, all_params)
 
 def optimize_model_hyperparam(study_name="model_params_search", storage="sqlite:///params_storage/optuna.db.sqlite3"):
-  optuna.create_study(study_name=study_name, direction="maximize", storage=storage, load_if_exists=True, sampler=RandomSampler(seed=int(time.time())))
+  optuna.create_study(study_name=study_name, direction="maximize", storage=storage, load_if_exists=True)
   study = optuna.Study(study_name=study_name, storage=storage)
 
   # use default data

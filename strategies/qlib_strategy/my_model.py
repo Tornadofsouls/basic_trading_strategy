@@ -19,16 +19,16 @@ class MyEnsembleModel(Model, FeatureInt):
         self,
         base_model="gbm",
         loss="mse",
-        num_models=6,
+        num_models=3,
         enable_sr=True,
         enable_fs=True,
         alpha1=1.0,
         bins_sr=10,
         bins_fs=5,
-        decay=None,
+        decay=0.5,
         sample_ratios=None,
         sub_weights=None,
-        epochs=100,
+        epochs=1000,
         **kwargs
     ):
         self.base_model = base_model  # "gbm" or "mlp", specifically, we use lgbm for "gbm"
@@ -91,7 +91,7 @@ class MyEnsembleModel(Model, FeatureInt):
 
             if self.enable_sr:
                 self.logger.info("Sample re-weighting...")
-                weights = self.sample_reweight(loss_values, k + 1)
+                weights = self.sample_reweight(pred_importance, k + 1)
 
             if self.enable_fs:
                 self.logger.info("Feature selection...")
@@ -99,13 +99,16 @@ class MyEnsembleModel(Model, FeatureInt):
 
     def train_submodel(self, df_train, df_valid, weights, features):
         dtrain, dvalid = self._prepare_data_gbm(df_train, df_valid, weights, features)
+        early_stopping_callback = lgb.early_stopping(50)
+        # NOTE: if you encounter error here. Please upgrade your lightgbm
+        verbose_eval_callback = lgb.log_evaluation(period=20)
         model = lgb.train(
             self.params,
             dtrain,
             num_boost_round=self.epochs,
-            valid_sets=None,
-            valid_names=None,
-            verbose_eval=20,
+            valid_sets=[dtrain, dvalid],
+            valid_names=["train", "valid"],
+            callbacks=[early_stopping_callback, verbose_eval_callback],
         )
         return model
 
