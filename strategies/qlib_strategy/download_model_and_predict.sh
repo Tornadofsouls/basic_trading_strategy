@@ -26,4 +26,4 @@ done
 # Run backtest
 yesterdayStr=$(date '+%Y-%m-%d' -d "yesterday")
 echo "Yesterday is" $yesterdayStr
-python backtest_recent.py --model_path /qlib_trading/trained_model --start_date "2022-08-15" --end_date $yesterdayStr
+python backtest_recent.py --model_path /qlib_trading/trained_model --start_date "2022-11-14" --end_date $yesterdayStr
