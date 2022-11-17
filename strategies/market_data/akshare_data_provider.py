@@ -280,7 +280,7 @@ class AkShareDataProvider(AbstractDataProvider):
     def update_future_info(self):
         self.database_manager.db.create_tables([FutureInfo])
         
-        futures_rule_df = ak.futures_rule(trade_date="20211206")
+        futures_rule_df = ak.futures_rule()
         if len(futures_rule_df) > 0:
             FutureInfo.delete().execute()
             for index, row in futures_rule_df.iterrows():
