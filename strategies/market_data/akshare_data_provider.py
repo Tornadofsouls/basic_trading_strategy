@@ -3,6 +3,7 @@ from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.database import get_database
 
 import akshare as ak
+import numpy as np
 from pytz import timezone
 import peewee
 
@@ -284,9 +285,9 @@ class AkShareDataProvider(AbstractDataProvider):
         if len(futures_rule_df) > 0:
             FutureInfo.delete().execute()
             for index, row in futures_rule_df.iterrows():
-                if row["交易保证金比例"][-1] != "%":
+                if np.isnan(row["交易保证金比例"]):
                     continue
-                margin_rate = float(row["交易保证金比例"][:-1]) / 100
+                margin_rate = row["交易保证金比例"] / 100
                 FutureInfo.create(future_symbol=row["代码"],
                                   margin_rate=margin_rate,
                                   multiplier=float(row["合约乘数"]),
