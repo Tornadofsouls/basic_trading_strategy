@@ -6,7 +6,7 @@ MAINTAINER chendi chenditc@gmail.com
 COPY strategies /strategies
 COPY scripts /scripts
 COPY requirements.txt /requirements.txt
-RUN pip install -r /requirements.txt && rm /requirements.txt
+RUN pip install --upgrade --force-reinstall -r /requirements.txt && rm /requirements.txt
 
 ENV PYTHONPATH=/strategies/
 
