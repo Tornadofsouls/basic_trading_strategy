@@ -1,3 +1,2 @@
 akshare
 opencensus-ext-azure
-git+https://github.com/chenditc/akshare
