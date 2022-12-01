@@ -10,6 +10,7 @@ from io import BytesIO
 class StrategyState():
     trade_complete = [False]
     trade_message = []
+    target_holding_stocks = {}
 
     def add_trade_message(self, message):
         self.trade_message.append(message)
@@ -43,7 +44,7 @@ def get_last_day_pred_table():
 def init(ContextInfo):
     ContextInfo.accID = '102666'
     ContextInfo.last_day_pred = get_last_day_pred_table()
-    ContextInfo.sell_white_list = [] # Do not sell these stocks
+    ContextInfo.sell_white_list = ["123161.SZ"] # Do not sell these stocks
     ContextInfo.state = StrategyState()
 
 def send_notification_log(title, text):
@@ -71,6 +72,7 @@ def get_last_price(ContextInfo, stock_code):
     if stock_code not in last_price_cache:
         last_price = ContextInfo.get_market_data(["close"], stock_code = [stock_code], skip_paused = True, period = '1m', dividend_type = 'none', count = -1)
         last_price_cache[stock_code] = last_price
+        print(stock_code, "Last price is", last_price_cache[stock_code])
     return last_price_cache[stock_code]
 def handlebar(ContextInfo):
     if ContextInfo.state.trade_complete[0]:
@@ -102,9 +104,9 @@ def handlebar(ContextInfo):
     print("Available balance: ", acct_info.m_dAvailable)
     balance_left = acct_info.m_dAvailable
 
-    total_trategy_balance = 21 * 10000
-    if total_trategy_balance > acct_info.m_dBalance:
-        total_trategy_balance = acct_info.m_dBalance
+    total_trategy_balance = acct_info.m_dBalance - 10000
+    #if total_trategy_balance > acct_info.m_dBalance - 10000:
+    #    total_trategy_balance = acct_info.m_dBalance - 10000
     print("Strategy balance:", total_trategy_balance)
 
     # Get current holding stocks
@@ -121,50 +123,52 @@ def handlebar(ContextInfo):
 
     # Get target holding stocks and corresponding volume
     score_list = ContextInfo.last_day_pred
-    target_holding_stocks = {}
-    strategy_residual_balance = 0
-    for index, stock_info in score_list.iterrows():
-        stock_code = stock_info["stockcode"]
-        min_shares = 100
-        if stock_code.startswith("688"):
-            min_shares = 200
-        # Add to target holding list
-        last_price = get_last_price(ContextInfo, stock_code)
-        # Do not use existing volume, as volume might not reflect order status
-        target_balance = total_trategy_balance / 10 
-        target_volume = math.floor(target_balance / last_price / min_shares) * min_shares
-        
-        strategy_residual_balance += (total_trategy_balance / 10) - (target_volume * last_price)
-            
-        target_holding_stocks[stock_code] = target_volume
-        if len(target_holding_stocks) == 10:
-            break
-
-    print("Assigning residual balance:", strategy_residual_balance)
-    # Attribute residual balance
-    while strategy_residual_balance > 0:
-        # Calculate diff with average target
-        # Attribute to largest diff
-        target_single_stock_amount = total_trategy_balance / 10 
-        amount_diff_map = {}
-        for stock_code, stock_volume in target_holding_stocks.items():
+    target_holding_stocks = ContextInfo.state.target_holding_stocks
+    if len(target_holding_stocks) == 0:
+        strategy_residual_balance = 0
+        for index, stock_info in score_list.iterrows():
+            stock_code = stock_info["stockcode"]
+            min_shares = 100
+            if stock_code.startswith("688"):
+                min_shares = 200
+            # Add to target holding list
             last_price = get_last_price(ContextInfo, stock_code)
-            amount_diff_map[stock_code] = target_single_stock_amount - (last_price * stock_volume)
+            # Do not use existing volume, as volume might not reflect order status
+            target_balance = total_trategy_balance / 10 
+            target_volume = math.floor(target_balance / last_price / min_shares) * min_shares
+            
+            strategy_residual_balance += (total_trategy_balance / 10) - (target_volume * last_price)
+                
+            target_holding_stocks[stock_code] = target_volume
+            if len(target_holding_stocks) == 10:
+                break
 
-        largest_diff_stock = max(amount_diff_map, key=amount_diff_map.get)
-        min_shares = 100
-        if largest_diff_stock.startswith("688"):
-            min_shares = 200
+        print("Assigning residual balance:", strategy_residual_balance)
+        # Attribute residual balance
+        while strategy_residual_balance > 0:
+            # Calculate diff with average target
+            # Attribute to largest diff
+            target_single_stock_amount = total_trategy_balance / 10 
+            amount_diff_map = {}
+            for stock_code, stock_volume in target_holding_stocks.items():
+                last_price = get_last_price(ContextInfo, stock_code)
+                amount_diff_map[stock_code] = target_single_stock_amount - (last_price * stock_volume)
+            print(amount_diff_map)
 
-        min_amount = get_last_price(ContextInfo, largest_diff_stock) * min_shares
-        # Insufficient average target
-        if min_amount > strategy_residual_balance:
-            break
+            largest_diff_stock = max(amount_diff_map, key=amount_diff_map.get)
+            min_shares = 100
+            if largest_diff_stock.startswith("688"):
+                min_shares = 200
 
-        strategy_residual_balance -= min_amount
-        target_holding_stocks[largest_diff_stock] += min_shares
+            min_amount = get_last_price(ContextInfo, largest_diff_stock) * min_shares
+            # Insufficient average target
+            if min_amount > strategy_residual_balance:
+                break
 
-    print("Residual balance:", strategy_residual_balance)
+            strategy_residual_balance -= min_amount
+            target_holding_stocks[largest_diff_stock] += min_shares
+
+        print("Residual balance:", strategy_residual_balance)
     trade_complete = True
 
     # outstanding orders
