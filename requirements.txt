@@ -1,2 +1,3 @@
 akshare
 opencensus-ext-azure
+tushare==1.2.89
