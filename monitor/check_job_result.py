@@ -76,7 +76,7 @@ let EndTime = todatetime("{}");
 
   logs = json.loads(response.text)
   if "error" in logs:
-    print("Error when query table", logs)
+    logger("Error when query table", logs)
     return False
 
   columns = [x['name'] for x in logs['tables'][0]['columns']]
@@ -116,6 +116,7 @@ if __name__ == "__main__":
   check_log_exists(keyword="IC-SpreadRollingStrategyBackTestingWrapper", alert_text="滚IC策略未执行", start_time=datetime(2022, 12, 1, 20), end_time=datetime(2022, 12, 1, 21))
   check_log_exists(keyword="IF-SpreadRollingStrategyBackTestingWrapper", alert_text="滚IF策略未执行", start_time=datetime(2022, 12, 1, 20), end_time=datetime(2022, 12, 1, 21))
   check_log_exists(keyword="A股新股申购完成", alert_text="A股申购策略未执行",  start_time=datetime(2022, 12, 1, 9, 30), end_time=datetime(2022, 12, 1, 11))
-  check_log_exists(keyword="A股新股跟踪:", alert_text="A股申购策略未执行", start_time=datetime(2022, 12, 1, 9, 30), end_time=datetime(2022, 12, 1, 11))
+  check_log_exists(keyword="A股新股跟踪:", alert_text="A股新股跟踪未执行", start_time=datetime(2022, 12, 1, 9, 30), end_time=datetime(2022, 12, 1, 11))
   check_log_exists(keyword="QLIB_TRADE_COMPLETE", alert_text="Qlib 策略未执行或卡住", start_time=datetime(2022, 12, 1, 9, 30), end_time=datetime(2022, 12, 1, 10))
   # TODO: Log heartbeat
+  logger.info("TRADE_MONITOR_HEART_BEAT")
