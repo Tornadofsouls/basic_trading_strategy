@@ -12,12 +12,6 @@ logger = logging.getLogger(__name__)
 appId = "10304985-784e-4aa7-b623-1b9d8d9b47cc"
 appKey = os.environ.get("APP_KEY")
 
-logger = logging.getLogger(__name__)
-from opencensus.ext.azure.log_exporter import AzureLogHandler
-logger.addHandler(AzureLogHandler(
-    connection_string='InstrumentationKey=67307e35-2e84-4bfa-b1fc-ed75c319e625')
-)
-
 def send_notification_log(title, text):
   print("Logging to azure", title, text)
   url = "https://di-trading-log.azurewebsites.net/api/log_event?code=gMcbj7J1vKh/VCs8e2MkVaHRp/4NLz8dttpgk03p8SMKcJQHo/8JKQ=="
@@ -112,7 +106,7 @@ def check_qlib_prediction(check_time):
     print("PASS for ", "qlib predict")
 
 if __name__ == "__main__":
-  check_qlib_prediction(check_time=datetime(2022, 12, 1, 7))
+  check_qlib_prediction(check_time=datetime(2022, 12, 1, 19))
   check_log_exists(keyword="IC-SpreadRollingStrategyBackTestingWrapper", alert_text="滚IC策略未执行", start_time=datetime(2022, 12, 1, 20), end_time=datetime(2022, 12, 1, 21))
   check_log_exists(keyword="IF-SpreadRollingStrategyBackTestingWrapper", alert_text="滚IF策略未执行", start_time=datetime(2022, 12, 1, 20), end_time=datetime(2022, 12, 1, 21))
   check_log_exists(keyword="A股新股申购完成", alert_text="A股申购策略未执行",  start_time=datetime(2022, 12, 1, 9, 30), end_time=datetime(2022, 12, 1, 11))
