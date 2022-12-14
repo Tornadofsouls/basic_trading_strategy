@@ -12,6 +12,11 @@ logger = logging.getLogger(__name__)
 appId = "10304985-784e-4aa7-b623-1b9d8d9b47cc"
 appKey = os.environ.get("APP_KEY")
 
+from opencensus.ext.azure.log_exporter import AzureLogHandler
+logger.addHandler(AzureLogHandler(
+    connection_string='InstrumentationKey=67307e35-2e84-4bfa-b1fc-ed75c319e625')
+)
+
 def send_notification_log(title, text):
   print("Logging to azure", title, text)
   url = "https://di-trading-log.azurewebsites.net/api/log_event?code=gMcbj7J1vKh/VCs8e2MkVaHRp/4NLz8dttpgk03p8SMKcJQHo/8JKQ=="
