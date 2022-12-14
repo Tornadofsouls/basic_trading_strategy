@@ -12,14 +12,11 @@ logger = logging.getLogger(__name__)
 appId = "10304985-784e-4aa7-b623-1b9d8d9b47cc"
 appKey = os.environ.get("APP_KEY")
 
-from opencensus.ext.azure.log_exporter import AzureLogHandler
-logger.addHandler(AzureLogHandler(
-    connection_string='InstrumentationKey=67307e35-2e84-4bfa-b1fc-ed75c319e625')
-)
-
-def send_notification_log(title, text):
+def send_notification_log(title, text, logonly=False):
   print("Logging to azure", title, text)
   url = "https://di-trading-log.azurewebsites.net/api/log_event?code=gMcbj7J1vKh/VCs8e2MkVaHRp/4NLz8dttpgk03p8SMKcJQHo/8JKQ=="
+  if logonly:
+    url += "&logonly=1"
   data = {
       "title" : title,
       "desp" : text,
@@ -118,4 +115,4 @@ if __name__ == "__main__":
   check_log_exists(keyword="A股新股跟踪:", alert_text="A股新股跟踪未执行", start_time=datetime(2022, 12, 1, 9, 30), end_time=datetime(2022, 12, 1, 11))
   check_log_exists(keyword="QLIB_TRADE_COMPLETE", alert_text="Qlib 策略未执行或卡住", start_time=datetime(2022, 12, 1, 9, 30), end_time=datetime(2022, 12, 1, 10))
   # TODO: Log heartbeat
-  logger.info("TRADE_MONITOR_HEART_BEAT")
+  send_notification_log("TRADE_MONITOR_HEART_BEAT", "TRADE_MONITOR_HEART_BEAT", True)
