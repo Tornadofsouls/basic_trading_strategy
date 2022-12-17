@@ -5,6 +5,7 @@ from datetime import date
 import json
 import time
 import logging
+import mysql.connector
 from pathlib import Path
 
 from vnpy.trader.setting import SETTINGS
@@ -17,7 +18,6 @@ from spread_rolling import SpreadRollingStrategyBackTestingWrapper
 from market_data.data_definition import *
 from utils.system_configs import azure_log_key, vnpy_config
 from utils.email_util import send_notification
-from utils.tencent_db_init import connect_db_and_wait
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -34,9 +34,14 @@ strategies_to_run = [
 ]
 
 def init_database():
-    connect_db_and_wait()
     db = get_database().db
     db.create_tables([PositionHistory, CurrentPosition, TargetPosition, StrategyRunStatus])    
+
+def commit_database():
+    db = get_database().db
+    db.execute_sql('select dolt_add("-A")')
+    db.execute_sql('select dolt_commit("-m", "daily update")')
+    db.execute_sql('select dolt_push("main")')
 
 def calculate_target_trade():
     # Current position
@@ -117,6 +122,7 @@ def daily_strategy_run():
                 run_record.run_time = int(time.time() - start_time)
                 run_record.save()
                 logger.error(f"Retrying {retry_i} times")
+    commit_database()
        
 if __name__ == "__main__":
     daily_strategy_run()
