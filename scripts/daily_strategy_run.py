@@ -5,7 +5,6 @@ from datetime import date
 import json
 import time
 import logging
-import mysql.connector
 from pathlib import Path
 
 from vnpy.trader.setting import SETTINGS
