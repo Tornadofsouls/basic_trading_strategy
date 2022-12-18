@@ -21,9 +21,16 @@ logger.addHandler(AzureLogHandler(
 def init_database():
     db = get_database().db
     db.create_tables([PositionHistory, CurrentPosition, TargetPosition, StrategyRunStatus])    
-    
+
+ def commit_database():
+    db = get_database().db
+    db.execute_sql('select dolt_add("-A")')
+    db.execute_sql('select dolt_commit("-m", "daily update")')
+    db.execute_sql('select dolt_push("main")')
+
     
 if __name__ == "__main__":
     init_database()
     asset_net_value.calculate_latest_position_history()
+    commit_database()
     
