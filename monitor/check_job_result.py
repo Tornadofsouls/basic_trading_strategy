@@ -54,7 +54,7 @@ def check_log_exists(keyword, alert_text, start_time=datetime(2022, 12, 1, 20), 
     start_time -= timedelta(hours=24)
 
   start_time_str = start_time.isoformat() 
-  end_time_str = end_time.isoformat()
+  end_time_str = local_time.isoformat()
 
   query = """
 let StartTime = todatetime("{}");
