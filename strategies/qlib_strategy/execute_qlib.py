@@ -44,7 +44,7 @@ def get_last_day_pred_table():
 def init(ContextInfo):
     ContextInfo.accID = '102666'
     ContextInfo.last_day_pred = get_last_day_pred_table()
-    ContextInfo.sell_white_list = ["123161.SZ"] # Do not sell these stocks
+    ContextInfo.sell_white_list = [] # Do not sell these stocks
     ContextInfo.state = StrategyState()
 
 def send_notification_log(title, text):
@@ -112,9 +112,15 @@ def handlebar(ContextInfo):
     # Get current holding stocks
     curr_holding = {}
     position_list = get_trade_detail_data(ContextInfo.accID, "STOCK", "POSITION")
+    two_month_ago = (datetime.datetime.today() - datetime.timedelta(days=60)).strftime("%Y%m%d")
     for position in position_list:
         stock_code = f"{position.m_strInstrumentID}.{position.m_strExchangeID}"
+        open_date = ContextInfo.get_open_date(stock_code)
+        print(open_date, two_month_ago, stock_code)
         if position.m_nVolume == 0:
+            continue
+        if str(open_date) == "19700101" or str(open) > two_month_ago:
+            # Skip new stock
             continue
         curr_holding[stock_code] = {
             "name" : position.m_strInstrumentName,
